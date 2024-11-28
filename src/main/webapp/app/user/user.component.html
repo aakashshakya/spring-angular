@@ -1,0 +1,48 @@
+<form>
+    <div class="form-group">
+        <label>Name</label>
+        <input [(ngModel)]="name" class="form-control" name="name" placeholder="Enter name" type="text">
+    </div>
+    <div class="form-group">
+        <label>Email address</label>
+        <input [(ngModel)]="email" class="form-control" name="email" placeholder="Enter email" type="text">
+    </div>
+    <div class="form-group">
+        <label>Contact Number</label>
+        <input [(ngModel)]="contactNumber" class="form-control" name="contactNumber" placeholder="Enter contact number"
+               type="text">
+    </div>
+    <input (click)="addUser()" class="btn btn-primary" type="submit">
+</form>
+<table class="table table-bordered table-striped" style="margin-top: 30px">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Contact Number</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+        @for (user of users; track user.id) {
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.contactNumber }}</td>
+                <td>
+                    @if (!user.status) {
+                        <div class="spinner-grow" role="status">
+                            <span class="sr-only"></span>
+                        </div>
+                    } @else {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+                            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                        </svg>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
