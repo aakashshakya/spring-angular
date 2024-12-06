@@ -21,7 +21,7 @@ public class UserController {
 
     @PostMapping
     public void setUser(@RequestBody User user) throws InterruptedException, JsonProcessingException {
-        userService.setUser(user, user.getId());
+        userService.setUser(user);
     }
 
     @GetMapping("{id}")

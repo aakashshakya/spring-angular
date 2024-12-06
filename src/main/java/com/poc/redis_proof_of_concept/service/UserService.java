@@ -17,7 +17,7 @@ import java.util.List;
 public class UserService {
     private final List<User> users = new ArrayList<>();
     ObjectMapper mapper = new ObjectMapper();
-    private Jedis jedis = new Jedis();
+    private final Jedis jedis = new Jedis();
     @Autowired
     private RedisTemplate<String, User> template;
 
@@ -56,7 +56,7 @@ public class UserService {
         return users;
     }
 
-    public User setUser(User user, int id) throws InterruptedException, JsonProcessingException {
+    public void setUser(User user) throws InterruptedException, JsonProcessingException {
         Thread.sleep(1000);
         user.setStatus(true);
         this.users.add(user);
@@ -68,7 +68,6 @@ public class UserService {
         System.out.println("FROM set" + hget);
         users.add(user);
         jedis.hset("users", "user-data", mapper.writeValueAsString(users));
-        return user;
     }
 
     public User getUserById(int id) throws Exception {
