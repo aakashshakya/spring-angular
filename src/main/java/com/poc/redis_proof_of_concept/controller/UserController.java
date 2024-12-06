@@ -1,5 +1,6 @@
 package com.poc.redis_proof_of_concept.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.poc.redis_proof_of_concept.dto.User;
 import com.poc.redis_proof_of_concept.service.UserService;
 import lombok.AllArgsConstructor;
@@ -14,12 +15,12 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getUsers();
+    public List<User> getAllUsers() throws JsonProcessingException {
+        return userService.getAllUsers();
     }
 
     @PostMapping
-    public void setUser(@RequestBody User user) throws InterruptedException {
+    public void setUser(@RequestBody User user) throws InterruptedException, JsonProcessingException {
         userService.setUser(user, user.getId());
     }
 
@@ -29,7 +30,7 @@ public class UserController {
     }
 
     @GetMapping("delete/{id}")
-    public void evictData(@PathVariable int id) {
+    public void evictData(@PathVariable int id) throws JsonProcessingException {
         userService.evictData(id);
     }
 }

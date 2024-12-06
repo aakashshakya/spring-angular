@@ -1,5 +1,7 @@
 package com.poc.redis_proof_of_concept.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.poc.redis_proof_of_concept.dto.User;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +11,13 @@ import redis.clients.jedis.Jedis;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Service
 public class UserService {
     private final List<User> users = new ArrayList<>();
+    ObjectMapper mapper = new ObjectMapper();
+    private Jedis jedis = new Jedis();
     @Autowired
     private RedisTemplate<String, User> template;
 
@@ -45,27 +48,46 @@ public class UserService {
                 .build());
     }
 
-    public User setUser(User user, int id) throws InterruptedException {
+    public List<User> getAllUsers() throws JsonProcessingException {
+        String hget = jedis.hget("users", "user-data");
+        if (hget != null) {
+            users.addAll(mapper.readerForListOf(User.class).readValue(hget));
+        }
+        return users;
+    }
+
+    public User setUser(User user, int id) throws InterruptedException, JsonProcessingException {
         Thread.sleep(1000);
-        template.opsForSet().add("users::" + id, user);
         user.setStatus(true);
+        this.users.add(user);
+        List<User> users = new ArrayList<>();
+        String hget = jedis.hget("users", "user-data");
+        if (hget != null) {
+            users.addAll(mapper.readerForListOf(User.class).readValue(hget));
+        }
+        System.out.println("FROM set" + hget);
         users.add(user);
+        jedis.hset("users", "user-data", mapper.writeValueAsString(users));
         return user;
     }
 
     public User getUserById(int id) throws Exception {
-        User user;
-        Set<User> redisUsers = template.opsForSet().members("users::" + id);
-        if (redisUsers != null && !redisUsers.isEmpty()) {
-            user = redisUsers.stream().findFirst().orElse(null);
-            Jedis jedis = new Jedis();
-            jedis.hset("user::" + id, "user-data", user.toString());
-            return user;
-        }
-        return users.stream().filter(user1 -> user1.getId() == id).findFirst().orElseThrow(Exception::new);
+        String hget = jedis.hget("users", "user-data");
+        System.out.println("From get" + hget);
+        List<User> users = mapper.readerForListOf(User.class).readValue(hget);
+        return users.stream().filter(user -> user.getId() == id).findFirst().orElse(null);
     }
 
-    public void evictData(int id) {
-        template.opsForSet().remove("users::" + id, users.stream().filter(user1 -> user1.getId() == id).findFirst().get());
+    public void evictData(int id) throws JsonProcessingException {
+        String hget = jedis.hget("users", "user-data");
+        System.out.println("From get" + hget);
+        List<User> cachedUsers = mapper.readerForListOf(User.class).readValue(hget);
+        List<User> newCachedUsers = new ArrayList<>();
+        for (User user : cachedUsers) {
+            if (user.getId() != id) {
+                newCachedUsers.add(user);
+            }
+        }
+        jedis.hset("users", "user-data", mapper.writeValueAsString(newCachedUsers));
     }
 }
